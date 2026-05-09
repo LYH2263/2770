@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.student.mapper.ScoreMapper">
+
+    <resultMap id="ScoreVOResultMap" type="com.student.dto.ScoreVO">
+        <id property="id" column="id"/>
+        <result property="studentId" column="student_id"/>
+        <result property="courseId" column="course_id"/>
+        <result property="studentNo" column="student_no"/>
+        <result property="studentName" column="student_name"/>
+        <result property="courseNo" column="course_no"/>
+        <result property="courseName" column="course_name"/>
+        <result property="credit" column="credit"/>
+        <result property="usualScore" column="usual_score"/>
+        <result property="examScore" column="exam_score"/>
+        <result property="totalScore" column="total_score"/>
+        <result property="major" column="major"/>
+    </resultMap>
+
+    <select id="selectScorePage" resultMap="ScoreVOResultMap">
+        SELECT s.id, s.student_id, s.course_id,
+               st.student_no, st.name AS student_name, st.major,
+               c.course_no, c.course_name, c.credit,
+               s.usual_score, s.exam_score, s.total_score
+        FROM scores s
+        LEFT JOIN students st ON s.student_id = st.id
+        LEFT JOIN courses c ON s.course_id = c.id
+        <where>
+            <if test="studentId != null">
+                AND s.student_id = #{studentId}
+            </if>
+            <if test="courseId != null">
+                AND s.course_id = #{courseId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (st.name LIKE CONCAT('%', #{keyword}, '%')
+                     OR st.student_no LIKE CONCAT('%', #{keyword}, '%')
+                     OR c.course_name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY s.create_time DESC
+    </select>
+
+    <select id="selectScoresByStudentId" resultMap="ScoreVOResultMap">
+        SELECT s.id, s.student_id, s.course_id,
+               st.student_no, st.name AS student_name, st.major,
+               c.course_no, c.course_name, c.credit,
+               s.usual_score, s.exam_score, s.total_score
+        FROM scores s
+        LEFT JOIN students st ON s.student_id = st.id
+        LEFT JOIN courses c ON s.course_id = c.id
+        WHERE s.student_id = #{studentId}
+        ORDER BY c.course_name
+    </select>
+
+    <select id="selectScoresByCourseId" resultMap="ScoreVOResultMap">
+        SELECT s.id, s.student_id, s.course_id,
+               st.student_no, st.name AS student_name, st.major,
+               c.course_no, c.course_name, c.credit,
+               s.usual_score, s.exam_score, s.total_score
+        FROM scores s
+        LEFT JOIN students st ON s.student_id = st.id
+        LEFT JOIN courses c ON s.course_id = c.id
+        WHERE s.course_id = #{courseId}
+        ORDER BY st.student_no
+    </select>
+
+    <select id="selectCourseStatistics" resultType="com.student.dto.CourseStatisticsVO">
+        SELECT c.id AS courseId, c.course_no AS courseNo, c.course_name AS courseName, c.credit,
+               COUNT(s.id) AS studentCount,
+               ROUND(AVG(s.total_score), 2) AS averageScore,
+               ROUND(SUM(CASE WHEN s.total_score >= 60 THEN 1 ELSE 0 END) * 100.0 / COUNT(s.id), 2) AS passRate,
+               MAX(s.total_score) AS maxScore,
+               MIN(s.total_score) AS minScore,
+               SUM(CASE WHEN s.total_score >= 90 THEN 1 ELSE 0 END) AS excellentCount,
+               SUM(CASE WHEN s.total_score >= 80 AND s.total_score &lt; 90 THEN 1 ELSE 0 END) AS goodCount,
+               SUM(CASE WHEN s.total_score >= 70 AND s.total_score &lt; 80 THEN 1 ELSE 0 END) AS mediumCount,
+               SUM(CASE WHEN s.total_score >= 60 AND s.total_score &lt; 70 THEN 1 ELSE 0 END) AS passCount,
+               SUM(CASE WHEN s.total_score &lt; 60 THEN 1 ELSE 0 END) AS failCount
+        FROM courses c
+        LEFT JOIN scores s ON c.id = s.course_id
+        GROUP BY c.id, c.course_no, c.course_name, c.credit
+        ORDER BY c.course_no
+    </select>
+
+    <select id="selectCourseStatisticsById" resultType="com.student.dto.CourseStatisticsVO">
+        SELECT c.id AS courseId, c.course_no AS courseNo, c.course_name AS courseName, c.credit,
+               COUNT(s.id) AS studentCount,
+               ROUND(AVG(s.total_score), 2) AS averageScore,
+               ROUND(SUM(CASE WHEN s.total_score >= 60 THEN 1 ELSE 0 END) * 100.0 / COUNT(s.id), 2) AS passRate,
+               MAX(s.total_score) AS maxScore,
+               MIN(s.total_score) AS minScore,
+               SUM(CASE WHEN s.total_score >= 90 THEN 1 ELSE 0 END) AS excellentCount,
+               SUM(CASE WHEN s.total_score >= 80 AND s.total_score &lt; 90 THEN 1 ELSE 0 END) AS goodCount,
+               SUM(CASE WHEN s.total_score >= 70 AND s.total_score &lt; 80 THEN 1 ELSE 0 END) AS mediumCount,
+               SUM(CASE WHEN s.total_score >= 60 AND s.total_score &lt; 70 THEN 1 ELSE 0 END) AS passCount,
+               SUM(CASE WHEN s.total_score &lt; 60 THEN 1 ELSE 0 END) AS failCount
+        FROM courses c
+        LEFT JOIN scores s ON c.id = s.course_id
+        WHERE c.id = #{courseId}
+        GROUP BY c.id, c.course_no, c.course_name, c.credit
+    </select>
+
+    <select id="selectMajorRank" resultType="com.student.dto.MajorRankVO">
+        SELECT st.major,
+               ROUND(AVG(s.total_score), 2) AS averageScore,
+               ROUND(AVG(
+                   CASE
+                       WHEN s.total_score >= 90 THEN 4.0
+                       WHEN s.total_score >= 85 THEN 3.7
+                       WHEN s.total_score >= 82 THEN 3.3
+                       WHEN s.total_score >= 78 THEN 3.0
+                       WHEN s.total_score >= 75 THEN 2.7
+                       WHEN s.total_score >= 72 THEN 2.3
+                       WHEN s.total_score >= 68 THEN 2.0
+                       WHEN s.total_score >= 64 THEN 1.5
+                       WHEN s.total_score >= 60 THEN 1.0
+                       ELSE 0
+                   END
+               ), 2) AS averageGpa,
+               COUNT(DISTINCT st.id) AS studentCount
+        FROM students st
+        JOIN scores s ON st.id = s.student_id
+        GROUP BY st.major
+        ORDER BY averageGpa DESC
+    </select>
+
+    <select id="selectTopStudents" resultType="com.student.dto.TopStudentVO">
+        SELECT st.id AS studentId, st.student_no AS studentNo, st.name AS studentName, st.major,
+               ROUND(AVG(
+                   CASE
+                       WHEN s.total_score >= 90 THEN 4.0
+                       WHEN s.total_score >= 85 THEN 3.7
+                       WHEN s.total_score >= 82 THEN 3.3
+                       WHEN s.total_score >= 78 THEN 3.0
+                       WHEN s.total_score >= 75 THEN 2.7
+                       WHEN s.total_score >= 72 THEN 2.3
+                       WHEN s.total_score >= 68 THEN 2.0
+                       WHEN s.total_score >= 64 THEN 1.5
+                       WHEN s.total_score >= 60 THEN 1.0
+                       ELSE 0
+                   END
+               ), 2) AS gpa
+        FROM students st
+        JOIN scores s ON st.id = s.student_id
+        GROUP BY st.id, st.student_no, st.name, st.major
+        HAVING COUNT(s.id) > 0
+        ORDER BY gpa DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectAverageGpa" resultType="java.lang.Double">
+        SELECT ROUND(AVG(
+            CASE
+                WHEN total_score >= 90 THEN 4.0
+                WHEN total_score >= 85 THEN 3.7
+                WHEN total_score >= 82 THEN 3.3
+                WHEN total_score >= 78 THEN 3.0
+                WHEN total_score >= 75 THEN 2.7
+                WHEN total_score >= 72 THEN 2.3
+                WHEN total_score >= 68 THEN 2.0
+                WHEN total_score >= 64 THEN 1.5
+                WHEN total_score >= 60 THEN 1.0
+                ELSE 0
+            END
+        ), 2)
+        FROM scores
+    </select>
+
+    <select id="selectFailRate" resultType="java.lang.Double">
+        SELECT ROUND(SUM(CASE WHEN total_score &lt; 60 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2)
+        FROM scores
+    </select>
+
+</mapper>
