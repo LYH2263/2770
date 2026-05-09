@@ -1,7 +1,11 @@
 package com.student.init;
 
+import com.student.entity.Course;
+import com.student.entity.Score;
 import com.student.entity.Student;
 import com.student.entity.User;
+import com.student.mapper.CourseMapper;
+import com.student.mapper.ScoreMapper;
 import com.student.mapper.StudentMapper;
 import com.student.mapper.UserMapper;
 import org.slf4j.Logger;
@@ -22,6 +26,12 @@ public class DataInitializer implements CommandLineRunner {
 
     @Autowired
     private StudentMapper studentMapper;
+
+    @Autowired
+    private CourseMapper courseMapper;
+
+    @Autowired
+    private ScoreMapper scoreMapper;
 
     @Override
     public void run(String... args) {
@@ -61,6 +71,70 @@ public class DataInitializer implements CommandLineRunner {
 
             logger.info("学生数据初始化完成，共插入 {} 条记录", students.length);
         }
+
+        // 初始化课程数据
+        if (courseMapper.selectCount(null) == 0) {
+            logger.info("开始初始化课程数据...");
+
+            Course[] courses = {
+                createCourse("CS1001", "高等数学", 5.0, "李教授"),
+                createCourse("CS1002", "大学英语", 4.0, "王教授"),
+                createCourse("CS1003", "数据结构", 4.0, "张教授"),
+                createCourse("CS1004", "操作系统", 3.5, "刘教授"),
+                createCourse("CS1005", "计算机网络", 3.5, "陈教授"),
+                createCourse("CS1006", "数据库原理", 4.0, "赵教授")
+            };
+
+            for (Course course : courses) {
+                courseMapper.insert(course);
+            }
+
+            logger.info("课程数据初始化完成，共插入 {} 条记录", courses.length);
+        }
+
+        // 初始化成绩数据
+        if (scoreMapper.selectCount(null) == 0) {
+            logger.info("开始初始化成绩数据...");
+
+            Double[][] regularScores = {
+                {85.0, 78.0, 92.0, 88.0, 76.0, 90.0},
+                {90.0, 85.0, 88.0, 92.0, 80.0, 85.0},
+                {75.0, 82.0, 78.0, 70.0, 85.0, 72.0},
+                {95.0, 92.0, 90.0, 94.0, 88.0, 92.0},
+                {80.0, 75.0, 82.0, 78.0, 90.0, 80.0},
+                {88.0, 90.0, 85.0, 82.0, 92.0, 88.0},
+                {70.0, 68.0, 75.0, 72.0, 65.0, 70.0},
+                {92.0, 88.0, 95.0, 90.0, 86.0, 94.0}
+            };
+
+            Double[][] finalScores = {
+                {82.0, 80.0, 88.0, 85.0, 78.0, 86.0},
+                {88.0, 90.0, 85.0, 90.0, 82.0, 88.0},
+                {70.0, 78.0, 72.0, 68.0, 80.0, 65.0},
+                {94.0, 95.0, 92.0, 96.0, 90.0, 94.0},
+                {78.0, 72.0, 80.0, 75.0, 88.0, 78.0},
+                {90.0, 92.0, 88.0, 85.0, 94.0, 90.0},
+                {62.0, 60.0, 68.0, 65.0, 58.0, 62.0},
+                {90.0, 85.0, 92.0, 88.0, 84.0, 90.0}
+            };
+
+            for (int studentIdx = 0; studentIdx < 8; studentIdx++) {
+                for (int courseIdx = 0; courseIdx < 6; courseIdx++) {
+                    Score score = new Score();
+                    score.setStudentId((long) (studentIdx + 1));
+                    score.setCourseId((long) (courseIdx + 1));
+                    score.setRegularScore(regularScores[studentIdx][courseIdx]);
+                    score.setFinalScore(finalScores[studentIdx][courseIdx]);
+                    double total = regularScores[studentIdx][courseIdx] * 0.4 + finalScores[studentIdx][courseIdx] * 0.6;
+                    score.setTotalScore(Math.round(total * 10.0) / 10.0);
+                    score.setCreateTime(LocalDateTime.now());
+                    score.setUpdateTime(LocalDateTime.now());
+                    scoreMapper.insert(score);
+                }
+            }
+
+            logger.info("成绩数据初始化完成");
+        }
     }
 
     private Student createStudent(String studentNo, String name, int age, String gender, 
@@ -76,5 +150,16 @@ public class DataInitializer implements CommandLineRunner {
         student.setCreateTime(LocalDateTime.now());
         student.setUpdateTime(LocalDateTime.now());
         return student;
+    }
+
+    private Course createCourse(String courseNo, String courseName, Double credit, String teacher) {
+        Course course = new Course();
+        course.setCourseNo(courseNo);
+        course.setCourseName(courseName);
+        course.setCredit(credit);
+        course.setTeacher(teacher);
+        course.setCreateTime(LocalDateTime.now());
+        course.setUpdateTime(LocalDateTime.now());
+        return course;
     }
 }
