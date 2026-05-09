@@ -1,0 +1,43 @@
+﻿# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build
+dist/
+build/
+target/
+*.log
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+venv/
+.venv/
+
+# Misc
+*.swp
+*.swo
+*~
+.env
+.env.local

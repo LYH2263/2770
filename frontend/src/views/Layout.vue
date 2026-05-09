@@ -31,6 +31,30 @@
                 <span class="font-medium">学生管理</span>
               </template>
             </el-menu-item>
+            <el-menu-item index="/courses" class="rounded-xl mb-1 hover:!bg-white/5 group">
+              <el-icon class="group-hover:text-primary transition-colors"><Reading /></el-icon>
+              <template #title>
+                <span class="font-medium">课程管理</span>
+              </template>
+            </el-menu-item>
+            <el-menu-item index="/score-entry" class="rounded-xl mb-1 hover:!bg-white/5 group">
+              <el-icon class="group-hover:text-primary transition-colors"><EditPen /></el-icon>
+              <template #title>
+                <span class="font-medium">成绩录入</span>
+              </template>
+            </el-menu-item>
+            <el-menu-item index="/score-query" class="rounded-xl mb-1 hover:!bg-white/5 group">
+              <el-icon class="group-hover:text-primary transition-colors"><Search /></el-icon>
+              <template #title>
+                <span class="font-medium">成绩查询</span>
+              </template>
+            </el-menu-item>
+            <el-menu-item index="/dashboard" class="rounded-xl mb-1 hover:!bg-white/5 group">
+              <el-icon class="group-hover:text-primary transition-colors"><DataAnalysis /></el-icon>
+              <template #title>
+                <span class="font-medium">数据看板</span>
+              </template>
+            </el-menu-item>
           </el-menu>
         </el-scrollbar>
         
@@ -111,7 +135,11 @@ import {
   ArrowDown,
   UserFilled,
   SwitchButton,
-  Setting
+  Setting,
+  Reading,
+  EditPen,
+  Search,
+  DataAnalysis
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -121,8 +149,14 @@ const isCollapse = ref(false)
 
 const activePath = computed(() => route.path)
 const currentRouteName = computed(() => {
-  if (route.path === '/students') return '学生管理'
-  return '首页'
+  const map = {
+    '/students': '学生管理',
+    '/courses': '课程管理',
+    '/score-entry': '成绩录入',
+    '/score-query': '成绩查询',
+    '/dashboard': '数据看板'
+  }
+  return map[route.path] || '首页'
 })
 
 const handleLogout = () => {
