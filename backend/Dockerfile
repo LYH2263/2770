@@ -7,7 +7,10 @@ COPY settings.xml .
 COPY pom.xml .
 
 # 2. 预下载依赖 (只要 pom.xml 不变，这一层就会被 Docker 缓存)
-RUN mvn -s settings.xml dependency:go-offline -B
+# 添加重试机制，处理网络不稳定问题
+RUN mvn -s settings.xml dependency:go-offline -B || \
+    mvn -s settings.xml dependency:go-offline -B || \
+    mvn -s settings.xml dependency:resolve -B
 
 # 3. 拷贝源码并打包
 COPY src ./src

@@ -25,10 +25,34 @@
             :collapse="isCollapse"
             class="border-none"
           >
+            <el-menu-item index="/dashboard" class="rounded-xl mb-1 hover:!bg-white/5 group">
+              <el-icon class="group-hover:text-primary transition-colors"><DataAnalysis /></el-icon>
+              <template #title>
+                <span class="font-medium">数据看板</span>
+              </template>
+            </el-menu-item>
             <el-menu-item index="/students" class="rounded-xl mb-1 hover:!bg-white/5 group">
               <el-icon class="group-hover:text-primary transition-colors"><User /></el-icon>
               <template #title>
                 <span class="font-medium">学生管理</span>
+              </template>
+            </el-menu-item>
+            <el-menu-item index="/courses" class="rounded-xl mb-1 hover:!bg-white/5 group">
+              <el-icon class="group-hover:text-primary transition-colors"><Reading /></el-icon>
+              <template #title>
+                <span class="font-medium">课程管理</span>
+              </template>
+            </el-menu-item>
+            <el-menu-item index="/score-input" class="rounded-xl mb-1 hover:!bg-white/5 group">
+              <el-icon class="group-hover:text-primary transition-colors"><Edit /></el-icon>
+              <template #title>
+                <span class="font-medium">成绩录入</span>
+              </template>
+            </el-menu-item>
+            <el-menu-item index="/score-query" class="rounded-xl mb-1 hover:!bg-white/5 group">
+              <el-icon class="group-hover:text-primary transition-colors"><Search /></el-icon>
+              <template #title>
+                <span class="font-medium">成绩查询</span>
               </template>
             </el-menu-item>
           </el-menu>
@@ -111,7 +135,11 @@ import {
   ArrowDown,
   UserFilled,
   SwitchButton,
-  Setting
+  Setting,
+  Reading,
+  Edit,
+  Search,
+  DataAnalysis
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -121,7 +149,11 @@ const isCollapse = ref(false)
 
 const activePath = computed(() => route.path)
 const currentRouteName = computed(() => {
+  if (route.path === '/dashboard') return '数据看板'
   if (route.path === '/students') return '学生管理'
+  if (route.path === '/courses') return '课程管理'
+  if (route.path === '/score-input') return '成绩录入'
+  if (route.path === '/score-query') return '成绩查询'
   return '首页'
 })
 
